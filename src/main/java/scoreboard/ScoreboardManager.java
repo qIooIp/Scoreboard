@@ -8,7 +8,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import scoreboard.adapter.ScoreAdapter;
-import scoreboard.example.ExampleScoreAdapter;
 import scoreboard.thread.ScoreboardThread;
 
 import java.util.Collection;
@@ -23,19 +22,22 @@ public class ScoreboardManager implements Listener {
     private ScoreAdapter scoreAdapter;
     private ScoreboardThread scoreboardThread;
 
-    public ScoreboardManager(JavaPlugin plugin) {
+    public ScoreboardManager(JavaPlugin plugin, ScoreAdapter scoreAdapter) {
         this.scoreboards = new HashMap<>();
-
-        this.scoreAdapter = new ExampleScoreAdapter();
+        this.scoreAdapter = scoreAdapter;
 
         this.scoreboardThread = new ScoreboardThread(this, 1000L);
         this.scoreboardThread.start();
 
+        Bukkit.getOnlinePlayers().forEach(this::loadScoreboard);
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
     public void disable() {
+        Bukkit.getOnlinePlayers().forEach(this::unregisterScoreboard);
+
         this.scoreboards.clear();
+        this.scoreboardThread.setRunning(false);
     }
 
     public PlayerScoreboard getScoreboard(Player player) {
@@ -48,6 +50,16 @@ public class ScoreboardManager implements Listener {
 
     public void setUpdateInterval(long value) {
         this.scoreboardThread.setInterval(value);
+    }
+
+    public void setScoreAdapter(ScoreAdapter newAdapter) {
+        this.scoreboards.values().forEach(scoreboard -> {
+            if(scoreboard.getScoreAdapter() != this.scoreAdapter) return;
+
+            scoreboard.setScoreAdapter(newAdapter);
+        });
+
+        this.scoreAdapter = newAdapter;
     }
 
     private void loadScoreboard(Player player) {

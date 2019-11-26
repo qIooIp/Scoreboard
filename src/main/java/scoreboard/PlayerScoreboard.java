@@ -137,6 +137,10 @@ public class PlayerScoreboard {
         .values()[index % 10].toString() + ChatColor.RESET.toString();
     }
 
+    public ScoreAdapter getScoreAdapter() {
+        return this.scoreAdapter;
+    }
+
     public void setScoreAdapter(ScoreAdapter adapter) {
         this.scoreAdapter = adapter;
     }

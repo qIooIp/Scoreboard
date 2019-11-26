@@ -18,6 +18,10 @@ public class ScoreboardThread extends Thread {
         this.interval = defaultInterval;
     }
 
+    public void setRunning(boolean value) {
+        this.running = value;
+    }
+
     public void setInterval(long value) {
         this.interval = value;
     }
