@@ -17,7 +17,9 @@ import java.util.stream.IntStream;
 
 public class PlayerScoreboard {
 
-    private UUID playerUuid;
+    private static final ScoreboardInput EMPTY_INPUT = new ScoreboardInput("$$$$$$", "$$$$$$");
+
+    private final UUID playerUuid;
 
     private final Scoreboard scoreboard;
     private final Objective objective;
@@ -25,6 +27,7 @@ public class PlayerScoreboard {
     private ScoreAdapter scoreAdapter;
     private Deque<ScoreboardInput> entries;
 
+    private ScoreboardInput[] entryCache;
     private String[] teamNameCache;
 
     private int lastEntriesSize;
@@ -43,6 +46,7 @@ public class PlayerScoreboard {
         this.scoreAdapter = scoreAdapter;
         this.entries = new ArrayDeque<>();
 
+        this.setupEntryCache();
         this.setupTeamNameCache();
 
         this.update = new AtomicBoolean(false);
@@ -66,6 +70,11 @@ public class PlayerScoreboard {
         return objective == null ? this.scoreboard.registerNewObjective("Scoreboard", "dummy") : objective;
     }
 
+    private void setupEntryCache() {
+        this.entryCache = new ScoreboardInput[15];
+        IntStream.range(0, 15).forEach(i -> this.entryCache[i] = EMPTY_INPUT);
+    }
+
     private void setupTeamNameCache() {
         this.teamNameCache = new String[15];
         IntStream.range(0, 15).forEach(i -> this.teamNameCache[i] = this.getTeamName(i));
@@ -80,6 +89,7 @@ public class PlayerScoreboard {
         for(int i = this.entries.size(); i > 0; i--) {
             ScoreboardInput input = this.entries.pollFirst();
             if(input == null) return;
+            if(this.entryCache[i].equals(input)) continue;
 
             String teamName = this.teamNameCache[i-1];
             Team team = this.getTeam(teamName);
@@ -94,6 +104,7 @@ public class PlayerScoreboard {
         if(entriesSize < this.lastEntriesSize) {
             for(int i = entriesSize; i < this.lastEntriesSize; i++) {
                 this.scoreboard.resetScores(this.teamNameCache[i]);
+                this.entryCache[i] = EMPTY_INPUT;
             }
         }
 

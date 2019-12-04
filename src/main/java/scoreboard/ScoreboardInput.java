@@ -17,4 +17,9 @@ class ScoreboardInput {
     String getSuffix() {
         return this.suffix;
     }
+
+    boolean equals(ScoreboardInput other) {
+        return this.prefix.length() == other.getPrefix().length() && this.prefix.equals(other.getPrefix())
+            && this.suffix.length() == other.getSuffix().length() && this.suffix.equals(other.getSuffix());
+    }
 }
